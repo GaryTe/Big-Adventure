@@ -60,6 +60,11 @@ export default class SortingView extends AbstractView {
   }
 
 
+  get nameSort() {
+    return this.#nameSort;
+  }
+
+
   destroy(component) {
     remove(component);
   }

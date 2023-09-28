@@ -1,14 +1,14 @@
 import AbstractStatefulView from '../framework/view/abstract-stateful-view';
 import {
+  returnEventType,
+  getDestinationList,
+  getNameDestination,
+  returnDestinationList,
   getDataForTypePoint,
   getDataForTypeDestination,
-  roundNumber,
-  returnEventType,
-  returnDestinationList,
-  getNameDestination,
-  getDestinationList,
-  getNumberOffer
-} from '../utils';
+  getNumberOffer,
+  roundNumber
+} from '../utils/utils-for-forms';
 import { points } from '../mock-data/point';
 import { nanoid } from 'nanoid';
 
@@ -17,7 +17,7 @@ const createFormAddNewPoint = (waypoint) => {
 
   return(` <li class="trip-events__item">
 <form class="event event--edit" action="#" method="post">
-  <header class="event__header">
+  <header class="event__header" style="flex-wrap: wrap;">
     <div class="event__type-wrapper">
       <label class="event__type  event__type-btn" for="event-type-toggle-1">
         <span class="visually-hidden">Choose event type</span>

@@ -27,7 +27,7 @@ const WaipointsList = {
   SHIP: 'Ship',
   DRIVE: 'Drive',
   FLIGHT: 'Flight',
-  CHECH_IN: 'Check-in',
+  'CHECK-IN': 'Check-in',
   SIGHTSEEING: 'Sightseeing',
   RESTARANT: 'Restaurant'
 };

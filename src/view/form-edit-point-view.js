@@ -1,14 +1,14 @@
 import AbstractStatefulView from '../framework/view/abstract-stateful-view';
 import {
-  getDataForTypePoint,
-  getDataForTypeDestination,
-  roundNumber,
   returnEventType,
+  getDestinationList,
   returnDestinationList,
   getNameDestination,
-  getDestinationList,
-  getNumberOffer
-} from '../utils';
+  getDataForTypePoint,
+  getNumberOffer,
+  getDataForTypeDestination,
+  roundNumber
+} from '../utils/utils-for-forms';
 import { Mode } from '../const';
 
 const createFormEditPoint = (waypoint) => {
