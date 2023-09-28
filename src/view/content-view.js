@@ -5,7 +5,7 @@ import {
   humanizTame,
   getDate,
   getDataTime
-} from '../utils';
+} from '../utils/utils';
 import { Message } from '../const';
 
 const getOffers = (point) => {

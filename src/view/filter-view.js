@@ -2,8 +2,6 @@ import AbstractView from '../framework/view/abstract-view';
 import { TypeFilter } from '../const';
 import { remove } from '../framework/render';
 
-let nameFilter = TypeFilter.EVERYTHING;
-
 const createFilter = () =>`<form class="trip-filters" action="#" method="get">
                 <div class="trip-filters__filter">
                   <input
@@ -34,6 +32,7 @@ const createFilter = () =>`<form class="trip-filters" action="#" method="get">
 
 export default class FilterView extends AbstractView {
   #handlerFilterTypeChange = null;
+  #nameFilter = TypeFilter.EVERYTHING;
 
   constructor(onFilterTypeChange) {
     super();
@@ -46,6 +45,12 @@ export default class FilterView extends AbstractView {
     return createFilter();
   }
 
+
+  get nameFilter() {
+    return this.#nameFilter;
+  }
+
+
   destroy(component) {
     remove(component);
   }
@@ -56,11 +61,11 @@ export default class FilterView extends AbstractView {
       return;
     }
 
-    if(evt.target.innerText === nameFilter) {
+    if(evt.target.innerText === this.#nameFilter) {
       return;
     }
 
-    nameFilter = evt.target.innerText;
-    this.#handlerFilterTypeChange(nameFilter);
+    this.#nameFilter = evt.target.innerText;
+    this.#handlerFilterTypeChange(this.#nameFilter);
   };
 }

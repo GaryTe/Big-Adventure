@@ -1,65 +1,34 @@
-import dayjs from 'dayjs';
-import toObject from 'dayjs/plugin/toObject';
-import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
-import { offersByType } from './mock-data/offer';
-import { destinations } from './mock-data/destination';
-import {
-  WaipointsList
-} from './const';
-
-dayjs.extend(toObject);
-dayjs.extend(isSameOrBefore);
-
-const humanizData = (value) => dayjs(value).format('DD MMM');
-const humanizTame = (value) => dayjs(value).format('HH:mm');
-const getDate = (value) => {
-  const date = dayjs(value).toObject();
-  const time = `${date.years}-${date.months}-${date.date}`;
-  return time;
-};
-const getDataTime = (value) => {
-  const date = dayjs(value).toObject();
-  const dateTime = `${date.years}-${date.months}-${date.date}T${date.hours}:${date.minutes}`;
-  return dateTime;
-};
-
-
-const updateDataWaypoint = (routesList, updateWaypoint) => {
-  const updateData = routesList.map((dataRoute) => dataRoute.uniqueValue === updateWaypoint.uniqueValue ? updateWaypoint : dataRoute);
-  return updateData;
-};
-
-const updateDataWaypointList = (routesList, updateWaypoint) => {
-  const updateData = routesList.filter((dataRoute) => dataRoute.uniqueValue !== updateWaypoint.uniqueValue);
-  return updateData;
-};
+import { offersByType } from '../mock-data/offer';
+import { destinations } from '../mock-data/destination';
+import { WaipointsList } from '../const';
 
 
 const returnEventType = (waypoint) => {
-  const waypointList = Object.values(WaipointsList);
+  const waypointList = new Set();
+  offersByType.forEach(({type}) => waypointList.add(type));
 
   return `<div class="event__type-list">
 <fieldset class="event__type-group">
   <legend class="visually-hidden">Event type</legend>
-${waypointList.map((event) => {
-    const typeEvent = event.toLowerCase();
+${Array.from(waypointList).map((event) => {
+    const typeEvent = WaipointsList[event.toUpperCase()];
 
     return(`<div class="event__type-item">
     <input
-    id="event-type-${typeEvent}-1"
+    id="event-type-${event}-1"
     class="event__type-input  visually-hidden"
     type="radio"
     name="event-type"
-    value=${typeEvent}
+    value=${event}
     ${waypoint === event ? 'checked' : ''}
     >
-    <label class="event__type-label  event__type-label--${typeEvent}" for="event-type-taxi-1">${event}</label>
+    <label class="event__type-label  event__type-label--${event}" for="event-type-taxi-1">${typeEvent}</label>
   </div>`);
-  }
-  ).join('')}
+  }).join('')}
 </fieldset>
 </div>`;
 };
+
 
 const getDestinationList = () => {
   const destinationList = new Set();
@@ -68,6 +37,7 @@ const getDestinationList = () => {
   return destinationList;
 };
 
+
 const returnDestinationList = () => {
   const destinationList = getDestinationList();
 
@@ -75,6 +45,7 @@ const returnDestinationList = () => {
   ${Array.from(destinationList).map((destination) => `<option value=${destination}></option>`).join('')}
 </datalist>`;
 };
+
 
 const getNameDestination = (value) => {
   let nameDestination = null;
@@ -90,6 +61,7 @@ const getNameDestination = (value) => {
   }
   return nameDestination;
 };
+
 
 const getDataForTypePoint = (point, offers) => {
   const offer = offersByType.find(({type}) => type === point.toLowerCase());
@@ -126,6 +98,7 @@ const getDataForTypePoint = (point, offers) => {
   </section>`;
 };
 
+
 const getNumberOffer = (nameOffer, typePoint) => {
 
   const offersList = offersByType.find((offer) => offer.type === typePoint.toLowerCase());
@@ -134,6 +107,7 @@ const getNumberOffer = (nameOffer, typePoint) => {
   const {id} = dataOffer;
   return id;
 };
+
 
 const getDataForTypeDestination = (nameDestination) => {
   if(!nameDestination) {return '';}
@@ -156,65 +130,20 @@ const getDataForTypeDestination = (nameDestination) => {
     </section>`;
 };
 
+
 const roundNumber = (price) => {
   const roundPrice = Math.round(price);
   return Math.abs(roundPrice);
 };
 
 
-function getWeightForNullDate(dateA, dateB) {
-  if (dateA === null && dateB === null) {
-    return 0;
-  }
-
-  if (dateA === null) {
-    return 1;
-  }
-
-  if (dateB === null) {
-    return -1;
-  }
-
-  return null;
-}
-
-function sortWaypointsDown(waypointA, waypointB) {
-  const weight = getWeightForNullDate(waypointA, waypointB);
-
-  return weight ?? dayjs(waypointB).diff(dayjs(waypointA));
-}
-
-
-const filterWaypoints = (waypoints) => {
-  const sortWaypoints = [];
-  waypoints.forEach((waypoint) => {
-    if(
-      dayjs().isSameOrBefore(waypoint.dateFrom, 'D')
-      ||
-      dayjs().isBefore(waypoint.dateTo, 'D')
-    ) {
-      sortWaypoints.push(waypoint);
-    }
-  });
-
-  return sortWaypoints;
-};
-
 export {
-  humanizData,
-  humanizTame,
-  getDate,
-  getDataTime,
-  getDataForTypePoint,
-  getDataForTypeDestination,
-  roundNumber,
-  sortWaypointsDown,
-  filterWaypoints,
   returnEventType,
+  getDestinationList,
   returnDestinationList,
   getNameDestination,
-  getDestinationList,
+  getDataForTypePoint,
   getNumberOffer,
-  updateDataWaypoint,
-  updateDataWaypointList
+  getDataForTypeDestination,
+  roundNumber
 };

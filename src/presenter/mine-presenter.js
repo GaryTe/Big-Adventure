@@ -17,7 +17,7 @@ import {
   filterWaypoints,
   updateDataWaypoint,
   updateDataWaypointList
-} from '../utils';
+} from '../utils/utils';
 
 export default class MinePresenter {
   #pointModel = new PointModel();
@@ -68,12 +68,24 @@ export default class MinePresenter {
   };
 
 
+  #checkRedrawSort = () => {
+    if(this.#elementSort.nameSort === TypeSort.PRICE) {
+      this.#elementSort.destroy(this.#elementSort);
+      this.#renderElementSort();
+    }
+  };
+
+  #checkRedrawFilter = () => {
+    if(this.#filter.nameFilter === TypeFilter.FUTURE) {
+      this.#filter.destroy(this.#filter);
+      this.#renderElementFilter();
+    }
+  };
+
   #redootPage = () => {
     this.#closeFormEditAndAddPoint();
-    this.#filter.destroy(this.#filter);
-    this.#renderElementFilter();
-    this.#elementSort.destroy(this.#elementSort);
-    this.#renderElementSort();
+    this.#checkRedrawFilter();
+    this.#checkRedrawSort();
     this.#clearWaypointList();
     this.#routesList = this.#sortWaypointsBeforeFirstRender(this.#routesList);
     this.#creatWaypointsList(this.#routesList);
@@ -95,8 +107,7 @@ export default class MinePresenter {
     this.#filterWaypoints(typeFilter);
     this.#sortWaypoints(TypeSort.DAY);
     this.#clearWaypointList();
-    this.#elementSort.destroy(this.#elementSort);
-    this.#renderElementSort();
+    this.#checkRedrawSort();
     this.#creatWaypointsList(this.#routesList);
   };
 
