@@ -10,6 +10,9 @@ import {
   roundNumber
 } from '../utils/utils-for-forms';
 import { Mode } from '../const';
+import flatpickr from 'flatpickr';
+import 'flatpickr/dist/flatpickr.min.css';
+
 
 const createFormEditPoint = (waypoint) => {
   const {type, offers, destination, basePrice} = waypoint;
@@ -51,20 +54,20 @@ const createFormEditPoint = (waypoint) => {
     <div class="event__field-group  event__field-group--time">
       <label class="visually-hidden" for="event-start-time-1">From</label>
       <input
-      class="event__input  event__input--time"
+      class="event__input  event__input--time event-start-time"
       id="event-start-time-1"
       type="text"
       name="event-start-time"
-      value="18/03/19 12:25"
+      value=""
       >
       &mdash;
       <label class="visually-hidden" for="event-end-time-1">To</label>
       <input
-      class="event__input  event__input--time"
+      class="event__input  event__input--time event-end-time"
       id="event-end-time-1"
       type="text"
       name="event-end-time"
-      value="18/03/19 13:35"
+      value=""
       >
     </div>
 
@@ -119,6 +122,8 @@ export default class FormEditPointView extends AbstractStatefulView {
   #handleDeletWaypoint = null;
   #dataRout = null;
   #mode = Mode.NO_SAVE;
+  #dataAndTimeStartEvent = null;
+  #dataAndTimeEndEvent = null;
 
   constructor(rout, onArrowClick, onChangeWaypoint, onDeletWaypoint) {
     super();
@@ -131,8 +136,24 @@ export default class FormEditPointView extends AbstractStatefulView {
     this._restoreHandlers();
   }
 
+
   get template() {
     return createFormEditPoint(this._state);
+  }
+
+
+  removeElement() {
+    super.removeElement();
+
+    if (this.#dataAndTimeStartEvent) {
+      this.#dataAndTimeStartEvent.destroy();
+      this.#dataAndTimeStartEvent = null;
+    }
+
+    if (this.#dataAndTimeEndEvent) {
+      this.#dataAndTimeEndEvent.destroy();
+      this.#dataAndTimeEndEvent = null;
+    }
   }
 
 
@@ -159,7 +180,46 @@ export default class FormEditPointView extends AbstractStatefulView {
       .addEventListener('click', this.#buttonSaveClickHandle);
     this.element.querySelector('.event__reset-btn')
       .addEventListener('click', this.#buttonDeleteClickHandle);
+    this.#setDataAndTimeStartEvent();
   }
+
+
+  #dataAndTimeChangeHandler = (userDateAndTime) => {
+    this.updateElement(userDateAndTime);
+  };
+
+
+  #setDataAndTimeStartEvent = () => {
+    if (this._state.dateFrom) {
+      this.#dataAndTimeStartEvent = flatpickr(
+        this.element.querySelector('.event-start-time'),
+        {
+          dateFormat: 'j/m/y H:i',
+          defaultDate: this._state.dateFrom,
+          enableTime: true,
+          maxDate: this._state.dateTo,
+          onClose: (userDateAndTime) => this.#dataAndTimeChangeHandler(
+            {dateFrom: userDateAndTime[0].toISOString()}
+          )
+        },
+      );
+    }
+
+    if (this._state.dateTo) {
+      this.#dataAndTimeEndEvent = flatpickr(
+        this.element.querySelector('.event-end-time'),
+        {
+          dateFormat: 'j/m/y H:i',
+          defaultDate: this._state.dateTo,
+          enableTime: true,
+          minDate: this._state.dateFrom,
+          onClose: (userDateAndTime) => this.#dataAndTimeChangeHandler(
+            {dateTo: userDateAndTime[0].toISOString()}
+          )
+        },
+      );
+    }
+  };
 
 
   #arrowClickHandle = () => {
