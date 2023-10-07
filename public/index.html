@@ -10,7 +10,10 @@
   </head>
 
   <body class="page-body">
-    <header class="page-header">
+    <header
+    class="page-header"
+    style="position: fixed; z-index: 1; width: 100%;"
+    >
       <div class="page-body__container  page-header__container">
         <img class="page-header__logo" src="img/logo.png" width="42" height="42" alt="Trip logo">
 
@@ -32,8 +35,26 @@
           <!-- Кнопка "New Event"-->
         </div>
       </div>
+      <div style="width: 200px; height: 150px; position: absolute; left: 1%; top: 6%;">
+        <img
+        style="display: block; max-width: 100%; height: auto; margin: auto;"
+        src="./img/shortcut-travel.gif"
+        width="200px"
+        height="150px"
+        alt="Company label"
+        >
+      </div>
     </header>
-    <main class="page-body__page-main  page-main">
+    <main
+    class="page-body__page-main  page-main"
+    style="
+    background-image: url('./img/background-road.jpg');
+    background-repeat: no-repeat;
+    background-size: 100%;
+    background-attachment: fixed;
+    margin-top: 165px
+    "
+    >
       <div class="page-body__container">
           <section class="trip-events">
             <h2 class="visually-hidden">Trip events</h2>

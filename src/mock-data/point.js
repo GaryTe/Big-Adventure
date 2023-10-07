@@ -56,8 +56,7 @@ const points = [
     isFavorite: false,
     offers: [1, 2, 3, 4],
     type: 'check-in'
-  },
-
+  }
 ];
 
 export{points};

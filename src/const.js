@@ -32,4 +32,31 @@ const WaipointsList = {
   RESTARANT: 'Restaurant'
 };
 
-export {Message, Mode, TypeSort, TypeFilter, WaipointsList};
+const NameSpace = {
+  WAYPOINTS: 'WAYPOINTS',
+};
+
+const TypeAction = {
+  PUT: 'PUT',
+  POST: 'POST',
+  DELETE: 'DELETE',
+  FILTER_FUTURE: 'FILTER_FUTURE',
+  EVERYTHING: 'EVERYTHING'
+};
+
+const TypeRedraw = {
+  PATCH_UPDATE: 'PATCH_UPDATE',
+  PATCH_DELET: 'PATCH_DELET',
+  MINOR: 'MINOR',
+};
+
+export {
+  Message,
+  Mode,
+  TypeSort,
+  TypeFilter,
+  WaipointsList,
+  NameSpace,
+  TypeAction,
+  TypeRedraw
+};

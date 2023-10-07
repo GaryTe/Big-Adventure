@@ -1,6 +1,7 @@
 import { offersByType } from '../mock-data/offer';
 import { destinations } from '../mock-data/destination';
 import { WaipointsList } from '../const';
+import {encode} from 'he';
 
 
 const returnEventType = (waypoint) => {
@@ -15,14 +16,14 @@ ${Array.from(waypointList).map((event) => {
 
     return(`<div class="event__type-item">
     <input
-    id="event-type-${event}-1"
+    id="event-type-${encode(event)}-1"
     class="event__type-input  visually-hidden"
     type="radio"
     name="event-type"
-    value=${event}
+    value=${encode(event)}
     ${waypoint === event ? 'checked' : ''}
     >
-    <label class="event__type-label  event__type-label--${event}" for="event-type-taxi-1">${typeEvent}</label>
+    <label class="event__type-label  event__type-label--${encode(event)}" for="event-type-taxi-1">${encode(typeEvent)}</label>
   </div>`);
   }).join('')}
 </fieldset>
@@ -42,7 +43,7 @@ const returnDestinationList = () => {
   const destinationList = getDestinationList();
 
   return `<datalist id="destination-list-1">
-  ${Array.from(destinationList).map((destination) => `<option value=${destination}></option>`).join('')}
+  ${Array.from(destinationList).map((destination) => `<option value=${encode(destination)}></option>`).join('')}
 </datalist>`;
 };
 
@@ -71,6 +72,7 @@ const getDataForTypePoint = (point, offers) => {
   return`<section class="event__section  event__section--offers">
         <h3 class="event__section-title  event__section-title--offers">Offers</h3>
         ${offer.offers.map((data) => {
+    const {title, price} = data;
     let checked = '';
 
     if(offers !== null) {
@@ -85,13 +87,13 @@ const getDataForTypePoint = (point, offers) => {
         class="event__offer-checkbox  visually-hidden"
         id="event-offer-luggage-1"
         type="checkbox"
-        name=${data.title}
+        name=${encode(title)}
         ${checked}
         >
         <label class="event__offer-label" for="event-offer-luggage-1">
-        <span class="event__offer-title">${data.title}</span>
+        <span class="event__offer-title">${encode(title)}</span>
         &plus;&euro;&nbsp;
-      <span class="event__offer-price">${data.price}</span>
+      <span class="event__offer-price">${encode(price.toString())}</span>
     </label>
   </div>`);
   }).join('')}
@@ -120,11 +122,11 @@ const getDataForTypeDestination = (nameDestination) => {
 
   return `<section class="event__section  event__section--destination">
       <h3 class="event__section-title  event__section-title--destination">Destination</h3>
-      <p class="event__destination-description">${description}</p>
+      <p class="event__destination-description">${encode(description)}</p>
 
       <div class="event__photos-container">
         <div class="event__photos-tape">
-          ${pictures.map((data) => `<img class="event__photo" src=${data.src} alt=${data.description}>`).join('')}
+          ${pictures.map((data) => `<img class="event__photo" src=${encode(data.src)} alt=${encode(data.description)}>`).join('')}
         </div>
       </div>
     </section>`;

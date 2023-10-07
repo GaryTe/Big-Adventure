@@ -56,7 +56,7 @@ const createContent = (route) => {
 
   getOffers(route);
 
-  return (`<li class="trip-events__item">
+  return (`<li class="trip-events__item" style="color: floralwhite;">
   <div class="event">
     <time class="event__date" datetime="${getDate(dateFrom)}">${humanizData(dateFrom)}</time>
     <div class="event__type">
