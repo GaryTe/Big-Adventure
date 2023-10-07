@@ -3,7 +3,12 @@ import { TypeSort } from '../const';
 import { remove } from '../framework/render';
 
 
-const createSorting = (nameSort) => `<form class="trip-events__trip-sort  trip-sort" action="#" method="get">
+const createSorting = (nameSort) => `<form
+class="trip-events__trip-sort  trip-sort"
+action="#"
+method="get"
+style="position: fixed; width: 100%; z-index: 1;"
+>
 <div class="trip-sort__item  trip-sort__item--day">
   <input
   id="sort-day"

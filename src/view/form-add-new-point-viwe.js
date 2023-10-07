@@ -11,6 +11,11 @@ import {
 } from '../utils/utils-for-forms';
 import { points } from '../mock-data/point';
 import { nanoid } from 'nanoid';
+import { TypeAction, TypeRedraw } from '../const';
+import flatpickr from 'flatpickr';
+import 'flatpickr/dist/flatpickr.min.css';
+import {encode} from 'he';
+
 
 const createFormAddNewPoint = (waypoint) => {
   const {type, offers, destination, basePrice} = waypoint;
@@ -25,7 +30,7 @@ const createFormAddNewPoint = (waypoint) => {
         class="event__type-icon"
         width="17"
         height="17"
-        src="img/icons/${type}.png"
+        src="img/icons/${encode(type)}.png"
         alt="Event type icon"
         >
       </label>
@@ -35,7 +40,7 @@ const createFormAddNewPoint = (waypoint) => {
 
     <div class="event__field-group  event__field-group--destination">
       <label class="event__label  event__type-output" for="event-destination-1">
-        ${type}
+        ${encode(type)}
       </label>
       <input
       class="event__input  event__input--destination"
@@ -51,7 +56,7 @@ const createFormAddNewPoint = (waypoint) => {
     <div class="event__field-group  event__field-group--time">
       <label class="visually-hidden" for="event-start-time-1">From</label>
       <input
-      class="event__input  event__input--time"
+      class="event__input  event__input--time event-start-time"
       id="event-start-time-1"
       type="text"
       name="event-start-time"
@@ -60,7 +65,7 @@ const createFormAddNewPoint = (waypoint) => {
       &mdash;
       <label class="visually-hidden" for="event-end-time-1">To</label>
       <input
-      class="event__input  event__input--time"
+      class="event__input  event__input--time event-end-time"
       id="event-end-time-1"
       type="text"
       name="event-end-time"
@@ -78,7 +83,7 @@ const createFormAddNewPoint = (waypoint) => {
       id="event-price-1"
       type="text"
       name="event-price"
-      value=${basePrice}
+      value=${encode(basePrice.toString())}
       >
     </div>
 
@@ -114,6 +119,8 @@ export default class FormAddNewPointViwe extends AbstractStatefulView {
   #dataRout = points[0];
   #handleCloseOpenFormAddNewPoint = null;
   #handleRecordNewWaypoint = null;
+  #dataAndTimeStartEvent = null;
+  #dataAndTimeEndEvent = null;
 
   constructor(onCloseOpenFormAddNewPoint, onRecordNewWaypoint) {
     super();
@@ -124,9 +131,26 @@ export default class FormAddNewPointViwe extends AbstractStatefulView {
     this._restoreHandlers();
   }
 
+
   get template() {
     return createFormAddNewPoint(this._state);
   }
+
+
+  removeElement() {
+    super.removeElement();
+
+    if (this.#dataAndTimeStartEvent) {
+      this.#dataAndTimeStartEvent.destroy();
+      this.#dataAndTimeStartEvent = null;
+    }
+
+    if (this.#dataAndTimeEndEvent) {
+      this.#dataAndTimeEndEvent.destroy();
+      this.#dataAndTimeEndEvent = null;
+    }
+  }
+
 
   _restoreHandlers() {
     this.element.querySelector('.event__type-group')
@@ -141,7 +165,46 @@ export default class FormAddNewPointViwe extends AbstractStatefulView {
       .addEventListener('click', this.#buttonSaveClickHandle);
     this.element.querySelector('.event__reset-btn')
       .addEventListener('click', this.#buttonCancelClickHandle);
+    this.#setDataAndTimeStartEvent();
   }
+
+
+  #dataAndTimeChangeHandler = (userDateAndTime) => {
+    this.updateElement(userDateAndTime);
+  };
+
+
+  #setDataAndTimeStartEvent = () => {
+    if (this._state.dateFrom) {
+      this.#dataAndTimeStartEvent = flatpickr(
+        this.element.querySelector('.event-start-time'),
+        {
+          dateFormat: 'j/m/y H:i',
+          defaultDate: this._state.dateFrom,
+          enableTime: true,
+          maxDate: this._state.dateTo,
+          onClose: (userDateAndTime) => this.#dataAndTimeChangeHandler(
+            {dateFrom: userDateAndTime[0].toISOString()}
+          )
+        },
+      );
+    }
+
+    if (this._state.dateTo) {
+      this.#dataAndTimeEndEvent = flatpickr(
+        this.element.querySelector('.event-end-time'),
+        {
+          dateFormat: 'j/m/y H:i',
+          defaultDate: this._state.dateTo,
+          enableTime: true,
+          minDate: this._state.dateFrom,
+          onClose: (userDateAndTime) => this.#dataAndTimeChangeHandler(
+            {dateTo: userDateAndTime[0].toISOString()}
+          )
+        },
+      );
+    }
+  };
 
 
   #inputEventClickHandle = (evt) => {
@@ -191,6 +254,7 @@ export default class FormAddNewPointViwe extends AbstractStatefulView {
 
   #updatelabelOffer = (element) => {
     let namberOffer = null;
+    let index = -1;
 
     if(element.matches('label')) {
       const {children} = element;
@@ -205,6 +269,18 @@ export default class FormAddNewPointViwe extends AbstractStatefulView {
 
     const numberOffer = getNumberOffer(namberOffer, type);
 
+    if(offers) {index = offers.findIndex((offer) => offer === numberOffer);}
+
+    if(index !== -1) {
+      this.updateElement({
+        offers: [
+          ...offers.slice(0, index),
+          ...offers.slice(index + 1)
+        ]
+      });
+      return;
+    }
+
     if(offers) {
       this.updateElement({offers: [...offers, numberOffer]});
     }else{
@@ -217,7 +293,11 @@ export default class FormAddNewPointViwe extends AbstractStatefulView {
     evt.preventDefault();
     this._setState({uniqueValue: nanoid()});
     this.#handleCloseOpenFormAddNewPoint();
-    this.#handleRecordNewWaypoint(this._state);
+    this.#handleRecordNewWaypoint({
+      nameAction: TypeAction.POST,
+      nameRedraw: TypeRedraw.MINOR,
+      data: this._state
+    });
   };
 
 

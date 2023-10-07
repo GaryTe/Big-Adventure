@@ -9,16 +9,30 @@ import {
   getDataForTypeDestination,
   roundNumber
 } from '../utils/utils-for-forms';
-import { Mode } from '../const';
+import {
+  Mode,
+  TypeRedraw,
+  TypeAction
+} from '../const';
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
+import {encode} from 'he';
 
 
 const createFormEditPoint = (waypoint) => {
   const {type, offers, destination, basePrice} = waypoint;
 
   return (`<li class="trip-events__item">
-<form class="event event--edit" action="#" method="post">
+<form
+style="
+background-image: url('img/background-image-form.png');
+background-repeat: no-repeat;
+background-size: 100%;
+"
+class="event event--edit"
+action="#"
+method="post"
+>
   <header class="event__header" style="flex-wrap: wrap;">
     <div class="event__type-wrapper">
       <label class="event__type  event__type-btn" for="event-type-toggle-1">
@@ -27,7 +41,7 @@ const createFormEditPoint = (waypoint) => {
         class="event__type-icon"
         width="17"
         height="17"
-        src="img/icons/${type}.png"
+        src="img/icons/${encode(type)}.png"
         alt="Event type icon"
         >
       </label>
@@ -37,7 +51,7 @@ const createFormEditPoint = (waypoint) => {
 
     <div class="event__field-group  event__field-group--destination">
       <label class="event__label  event__type-output" for="event-destination-1">
-        ${type}
+        ${encode(type)}
       </label>
       <input
       class="event__input
@@ -45,7 +59,7 @@ const createFormEditPoint = (waypoint) => {
       id="event-destination-1"
       type="text"
       name="event-destination"
-      value=${getNameDestination(destination).name}
+      value=${encode(getNameDestination(destination).name)}
       list="destination-list-1"
       >
       ${returnDestinationList()}
@@ -81,7 +95,7 @@ const createFormEditPoint = (waypoint) => {
       id="event-price-1"
       type="text"
       name="event-price"
-      value=${basePrice}
+      value=${encode(basePrice.toString())}
       >
     </div>
 
@@ -118,20 +132,18 @@ const createFormEditPoint = (waypoint) => {
 
 export default class FormEditPointView extends AbstractStatefulView {
   #handleArrowClick = null;
-  #handleChangeWaypoint = null;
-  #handleDeletWaypoint = null;
+  #handleAction = null;
   #dataRout = null;
   #mode = Mode.NO_SAVE;
   #dataAndTimeStartEvent = null;
   #dataAndTimeEndEvent = null;
 
-  constructor(rout, onArrowClick, onChangeWaypoint, onDeletWaypoint) {
+  constructor(rout, onArrowClick, onAction) {
     super();
     this.#dataRout = rout;
     this._setState(rout);
     this.#handleArrowClick = onArrowClick;
-    this.#handleChangeWaypoint = onChangeWaypoint;
-    this.#handleDeletWaypoint = onDeletWaypoint;
+    this.#handleAction = onAction;
 
     this._restoreHandlers();
   }
@@ -205,6 +217,7 @@ export default class FormEditPointView extends AbstractStatefulView {
       );
     }
 
+
     if (this._state.dateTo) {
       this.#dataAndTimeEndEvent = flatpickr(
         this.element.querySelector('.event-end-time'),
@@ -274,6 +287,7 @@ export default class FormEditPointView extends AbstractStatefulView {
 
   #updatelabelOffer = (element) => {
     let namberOffer = null;
+    let index = -1;
 
     if(element.matches('label')) {
       const {children} = element;
@@ -288,6 +302,18 @@ export default class FormEditPointView extends AbstractStatefulView {
 
     const numberOffer = getNumberOffer(namberOffer, type);
 
+    if(offers) {index = offers.findIndex((offer) => offer === numberOffer);}
+
+    if(index !== -1) {
+      this.updateElement({
+        offers: [
+          ...offers.slice(0, index),
+          ...offers.slice(index + 1)
+        ]
+      });
+      return;
+    }
+
     if(offers) {
       this.updateElement({offers: [...offers, numberOffer]});
     }else{
@@ -298,11 +324,19 @@ export default class FormEditPointView extends AbstractStatefulView {
   #buttonSaveClickHandle = () => {
     this.#mode = Mode.SAVE;
     this.#handleArrowClick();
-    this.#handleChangeWaypoint(this._state);
+    this.#handleAction({
+      nameAction: TypeAction.PUT,
+      nameRedraw: TypeRedraw.PATCH_UPDATE,
+      data: this._state
+    });
   };
 
   #buttonDeleteClickHandle = () => {
     this.#handleArrowClick();
-    this.#handleDeletWaypoint(this._state);
+    this.#handleAction({
+      nameAction: TypeAction.DELETE,
+      nameRedraw: TypeRedraw.PATCH_DELET,
+      data: this._state
+    });
   };
 }

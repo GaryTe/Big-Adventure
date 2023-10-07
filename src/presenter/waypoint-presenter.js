@@ -15,15 +15,13 @@ export default class WaypointPresenter {
 
   #mode = Mode.DEFAULT;
   #handleModeChange = null;
-  #handleChangeWaypoin = null;
-  #handleDeletWaypoint = null;
+  #handleAction = null;
 
 
-  constructor(containerForContent, onCloseFormEditPoint, onChangeWaypoint, onDeletWaypoint) {
+  constructor(containerForContent, onCloseFormEditPoint, onAction) {
     this.#containerForContent = containerForContent;
     this.#handleModeChange = onCloseFormEditPoint;
-    this.#handleChangeWaypoin = onChangeWaypoint;
-    this.#handleDeletWaypoint = onDeletWaypoint;
+    this.#handleAction = onAction;
   }
 
   init(waypoint) {
@@ -45,8 +43,7 @@ export default class WaypointPresenter {
       () => {
         this.#replaceFormEditPointToWaypoint();
       },
-      this.#handleChangeWaypoin,
-      this.#handleDeletWaypoint
+      this.#handleAction
     );
 
     if (prevContent === null || prevFormEditPoint === null) {

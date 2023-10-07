@@ -1,4 +1,3 @@
-import PointModel from '../model/point-model';
 import FilterView from '../view/filter-view';
 import SortingView from '../view/sorting-view';
 import ContainerForContentView from '../view/container-for-content-view';
@@ -10,17 +9,25 @@ import {
 } from '../framework/render';
 import {
   TypeSort,
-  TypeFilter
+  TypeFilter,
+  TypeAction,
+  TypeRedraw
 } from '../const';
 import {
   sortWaypointsDown,
-  filterWaypoints,
-  updateDataWaypoint,
-  updateDataWaypointList
 } from '../utils/utils';
+import { getWaypointsList } from '../redux/selectors/data-waypoints/selectors';
+import { getDataWaypoints } from '../redux/selectors/data-for-redrawing/selectors';
+import {
+  upgradeWaypoint,
+  addWaypoint,
+  deleteWaypoint,
+  filterWaypointsFuture,
+  filterWaypointsEverything
+} from '../redux/reducer/get-weypoints/get-weypoints';
+import { store } from '../redux/store/store';
 
 export default class MinePresenter {
-  #pointModel = new PointModel();
   #minePresenter = null;
   #sortingContainer = null;
   #buttonNewEventContainer = null;
@@ -29,14 +36,15 @@ export default class MinePresenter {
   #elementSort = null;
   #containerForContent = new ContainerForContentView();
   #waypointsPresenterList = new Map();
-
-  #routesList = this.#pointModel.routesList;
-  #originalRoutesList = this.#pointModel.routesList;
+  #typeSort = TypeSort.DAY;
+  #typeFilter = TypeFilter.EVERYTHING;
 
   constructor(minePresenter, sortingContainer, buttonNewEventContainer) {
     this.#minePresenter = minePresenter;
     this.#sortingContainer = sortingContainer;
     this.#buttonNewEventContainer = buttonNewEventContainer;
+
+    store.subscribe(this.#redrawing);
   }
 
 
@@ -44,89 +52,125 @@ export default class MinePresenter {
     this.#renderPage();
   }
 
-  #recordNewWaypoint = (newWaypoint) => {
-    this.#routesList.push(newWaypoint);
-    this.#originalRoutesList = this.#routesList;
-    this.#sortWaypointsBeforeFirstRender(this.#routesList);
-    this.#clearWaypointList();
-    this.#creatWaypointsList(this.#routesList);
+
+  #sortWaypoints = () => {
+    switch (this.#typeSort) {
+      case TypeSort.DAY:
+        return [...getWaypointsList()].sort((waypointA, waypointB) => sortWaypointsDown(waypointA.dateFrom, waypointB.dateFrom)).reverse();
+      case TypeSort.PRICE:
+        return [...getWaypointsList()].sort((waypointA, waypointB) => sortWaypointsDown(waypointA.basePrice, waypointB.basePrice));
+    }
   };
 
-  #changeWaypoint = (updateWaypoint) => {
-    const updateWaypointsList = updateDataWaypoint(this.#routesList, updateWaypoint);
-    this.#originalRoutesList = updateWaypointsList;
-    this.#routesList = this.#originalRoutesList;
-    this.#waypointsPresenterList.get(updateWaypoint.uniqueValue).init(updateWaypoint);
+
+  #filterWaypoints = () => {
+    switch (this.#typeFilter) {
+      case TypeFilter.EVERYTHING:
+        this.#action({
+          nameAction: TypeAction.EVERYTHING,
+          nameRedraw: TypeRedraw.MINOR,
+          data: null
+        });
+        break;
+      case TypeFilter.FUTURE:
+        this.#action({
+          nameAction: TypeAction.FILTER_FUTURE,
+          nameRedraw: TypeRedraw.MINOR,
+          data: null
+        });
+        break;
+    }
   };
 
-  #deletWaypoint = (updateWaypoint) => {
-    const updateWaypointsList = updateDataWaypointList(this.#routesList, updateWaypoint);
-    this.#originalRoutesList = updateWaypointsList;
-    this.#routesList = this.#originalRoutesList;
-    this.#waypointsPresenterList.get(updateWaypoint.uniqueValue).destroy();
-    this.#waypointsPresenterList.delete(updateWaypoint.uniqueValue);
+
+  #action = ({nameAction, nameRedraw, data}) => {
+    switch (nameAction) {
+      case TypeAction.PUT:
+        store.dispatch(upgradeWaypoint({nameRedraw, data}));
+        break;
+      case TypeAction.POST:
+        store.dispatch(addWaypoint({nameRedraw, data}));
+        break;
+      case TypeAction.DELETE:
+        store.dispatch(deleteWaypoint({nameRedraw, data}));
+        break;
+      case TypeAction.FILTER_FUTURE:
+        store.dispatch(filterWaypointsFuture({nameRedraw}));
+        break;
+      case TypeAction.EVERYTHING:
+        store.dispatch(filterWaypointsEverything({nameRedraw}));
+        break;
+    }
+  };
+
+
+  #redrawing = () => {
+    const {waypoint, valueRedraw} = getDataWaypoints();
+
+    switch (valueRedraw) {
+      case TypeRedraw.PATCH_UPDATE:
+        this.#waypointsPresenterList.get(waypoint.uniqueValue).init(waypoint);
+        break;
+      case TypeRedraw.PATCH_DELET:
+        this.#waypointsPresenterList.get(waypoint.uniqueValue).destroy();
+        this.#waypointsPresenterList.delete(waypoint.uniqueValue);
+        break;
+      case TypeRedraw.MINOR:
+        this.#clearWaypointList();
+        this.#creatWaypointsList();
+        break;
+    }
+  };
+
+
+  #redootPage = () => {
+    this.#closeFormEditAndAddPoint();
+    if(this.#elementSort.nameSort !== TypeSort.DAY || this.#filter.nameFilter !== TypeFilter.EVERYTHING) {
+      this.#checkRedrawFilter();
+      this.#checkRedrawSort();
+      this.#filterWaypoints();
+    }
+    this.#checkRedrawFilter();
+    this.#checkRedrawSort();
   };
 
 
   #checkRedrawSort = () => {
     if(this.#elementSort.nameSort === TypeSort.PRICE) {
+      this.#typeSort = TypeSort.DAY;
       this.#elementSort.destroy(this.#elementSort);
       this.#renderElementSort();
     }
   };
 
+
   #checkRedrawFilter = () => {
     if(this.#filter.nameFilter === TypeFilter.FUTURE) {
+      this.#typeFilter = TypeFilter.EVERYTHING;
       this.#filter.destroy(this.#filter);
       this.#renderElementFilter();
     }
   };
 
-  #redootPage = () => {
-    this.#closeFormEditAndAddPoint();
-    this.#checkRedrawFilter();
-    this.#checkRedrawSort();
-    this.#clearWaypointList();
-    this.#routesList = this.#sortWaypointsBeforeFirstRender(this.#routesList);
-    this.#creatWaypointsList(this.#routesList);
-  };
-
-
-  #filterWaypoints = (typeFilter) => {
-    switch (typeFilter) {
-      case TypeFilter.EVERYTHING:
-        this.#routesList = this.#originalRoutesList;
-        break;
-      case TypeFilter.FUTURE:
-        this.#routesList = filterWaypoints(this.#routesList);
-        break;
-    }
-  };
 
   #filterTypeChange = (typeFilter) => {
-    this.#filterWaypoints(typeFilter);
-    this.#sortWaypoints(TypeSort.DAY);
-    this.#clearWaypointList();
+    this.#typeFilter = typeFilter;
+    this.#typeSort = TypeSort.DAY;
+    this.#filterWaypoints();
     this.#checkRedrawSort();
-    this.#creatWaypointsList(this.#routesList);
   };
 
-
-  #sortWaypoints = (typeSort) => {
-    switch (typeSort) {
-      case TypeSort.DAY:
-        this.#routesList.sort((waypointA, waypointB) => sortWaypointsDown(waypointA.dateFrom, waypointB.dateFrom)).reverse();
-        break;
-      case TypeSort.PRICE:
-        this.#routesList.sort((waypointA, waypointB) => sortWaypointsDown(waypointA.basePrice, waypointB.basePrice));
-        break;
-    }
-  };
 
   #sortTypeChange = (typeSort) => {
-    this.#sortWaypoints(typeSort);
+    this.#typeSort = typeSort;
     this.#clearWaypointList();
-    this.#creatWaypointsList(this.#routesList);
+    this.#creatWaypointsList();
+  };
+
+
+  #closeFormEditAndAddPoint = () => {
+    this.#waypointsPresenterList.forEach((waypointPresenter) => waypointPresenter.closeOpenFormEditPoint());
+    this.#creatNewEventPresenter.closeOpenFormAddNewPoint();
   };
 
 
@@ -135,24 +179,20 @@ export default class MinePresenter {
     this.#waypointsPresenterList.clear();
   };
 
-  #closeFormEditAndAddPoint = () => {
-    this.#waypointsPresenterList.forEach((waypointPresenter) => waypointPresenter.closeOpenFormEditPoint());
-    this.#creatNewEventPresenter.closeOpenFormAddNewPoint();
+
+  #creatWaypointsList = () => {
+    this.#sortWaypoints().map((route) => this.#renderWaypointsList(route));
   };
+
 
   #renderWaypointsList = (route) => {
     const waypointPresenter = new WaypointPresenter(
       this.#containerForContent,
       this.#closeFormEditAndAddPoint,
-      this.#changeWaypoint,
-      this.#deletWaypoint
+      this.#action
     );
     waypointPresenter.init(route);
     this.#waypointsPresenterList.set(route.uniqueValue, waypointPresenter);
-  };
-
-  #creatWaypointsList = (routesList) => {
-    routesList.map((route) => this.#renderWaypointsList(route));
   };
 
 
@@ -161,10 +201,11 @@ export default class MinePresenter {
       this.#buttonNewEventContainer,
       this.#containerForContent,
       this.#redootPage,
-      this.#recordNewWaypoint,
+      this.#action,
     );
     this.#creatNewEventPresenter.init();
   };
+
 
   #renderElementFilter = () => {
     this.#filter = new FilterView(
@@ -174,6 +215,7 @@ export default class MinePresenter {
     render(this.#filter, this.#minePresenter);
   };
 
+
   #renderElementSort = () => {
     this.#elementSort = new SortingView(
       this.#sortTypeChange
@@ -182,7 +224,6 @@ export default class MinePresenter {
     render(this.#elementSort, this.#sortingContainer, RenderPosition.AFTERBEGIN);
   };
 
-  #sortWaypointsBeforeFirstRender = (routesList) => routesList.sort((waypointA, waypointB) => sortWaypointsDown(waypointA.dateFrom, waypointB.dateFrom)).reverse();
 
   #renderPage = () => {
     this.#renderElementFilter();
@@ -190,7 +231,6 @@ export default class MinePresenter {
     render(this.#containerForContent, this.#sortingContainer);
     this.#renderElementSort();
 
-    this.#sortWaypointsBeforeFirstRender(this.#routesList);
-    this.#creatWaypointsList(this.#routesList);
+    this.#creatWaypointsList();
   };
 }
