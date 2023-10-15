@@ -24,13 +24,13 @@ const getDataTime = (value) => {
 
 
 const updateDataWaypoint = (routesList, updateWaypoint) => {
-  const updateData = routesList.map((dataRoute) => dataRoute.uniqueValue === updateWaypoint.uniqueValue ? updateWaypoint : dataRoute);
+  const updateData = routesList.map((dataRoute) => dataRoute.id === updateWaypoint.id ? updateWaypoint : dataRoute);
   return updateData;
 };
 
 
 const updateDataWaypointList = (routesList, updateWaypoint) => {
-  const updateData = routesList.filter((dataRoute) => dataRoute.uniqueValue !== updateWaypoint.uniqueValue);
+  const updateData = routesList.filter((dataRoute) => dataRoute.id !== updateWaypoint.id);
   return updateData;
 };
 

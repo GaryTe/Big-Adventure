@@ -1,7 +1,17 @@
-import { offersByType } from '../mock-data/offer';
-import { destinations } from '../mock-data/destination';
-import { WaipointsList } from '../const';
 import {encode} from 'he';
+
+
+let destinations = null;
+let offersByType = null;
+
+
+const setDestinationsList = (dataDestinations) => {
+  destinations = dataDestinations;
+};
+
+const setOffers = (dataOffer) => {
+  offersByType = dataOffer;
+};
 
 
 const returnEventType = (waypoint) => {
@@ -12,7 +22,7 @@ const returnEventType = (waypoint) => {
 <fieldset class="event__type-group">
   <legend class="visually-hidden">Event type</legend>
 ${Array.from(waypointList).map((event) => {
-    const typeEvent = WaipointsList[event.toUpperCase()];
+    const typeEvent = `${event[0].toUpperCase()}${Array.from(event).slice(1).join('')}`;
 
     return(`<div class="event__type-item">
     <input
@@ -60,6 +70,8 @@ const getNameDestination = (value) => {
   }else{
     nameDestination = destinations.find(({name}) => name === value);
   }
+
+  if(!nameDestination) {return {name: '....'};}
   return nameDestination;
 };
 
@@ -139,6 +151,35 @@ const roundNumber = (price) => {
 };
 
 
+const parseStateToWaypoint = (point) => {
+
+  const dataPoint = {
+    ...point
+  };
+
+  delete dataPoint.isFavorite;
+  delete dataPoint.isSaving;
+  delete dataPoint.isDeleting;
+  delete dataPoint.isDisabled;
+
+  return dataPoint;
+};
+
+
+const parseNewStateToWaypoint = (point) => {
+
+  const dataPoint = {
+    ...point
+  };
+
+  delete dataPoint.id;
+  delete dataPoint.isFavorite;
+  delete dataPoint.isSaving;
+  delete dataPoint.isDisabled;
+
+  return dataPoint;
+};
+
 export {
   returnEventType,
   getDestinationList,
@@ -147,5 +188,9 @@ export {
   getDataForTypePoint,
   getNumberOffer,
   getDataForTypeDestination,
-  roundNumber
+  roundNumber,
+  setDestinationsList,
+  setOffers,
+  parseStateToWaypoint,
+  parseNewStateToWaypoint
 };

@@ -10,9 +10,9 @@ const initialState = {
   originalWaypointsList: null,
   waypointsList: null,
   dataWaypoints: {
-    waypoints: null,
-    waypoint: null,
-    valueRedraw: null
+    response: null,
+    dataWaypoint: null,
+    nameRadraw: null
   },
 };
 
@@ -21,8 +21,13 @@ export const getWaypoints = createSlice({
   initialState,
   reducers: {
     setWaypoints: (state, action) => {
-      state.originalWaypointsList = action.payload;
-      state.waypointsList = action.payload;
+      if(action.payload.dataPoints !== null) {
+        state.originalWaypointsList = action.payload.dataPoints;
+        state.waypointsList = action.payload.dataPoints;
+      }
+      if(action.payload.respons) {state.dataWaypoints.response = action.payload.respons;}
+
+      state.dataWaypoints.nameRadraw = action.payload.valuePromise;
     },
 
     upgradeWaypoint: (state, action) => {
@@ -34,8 +39,8 @@ export const getWaypoints = createSlice({
 
       state.dataWaypoints = {
         ...state.dataWaypoints,
-        waypoint: data,
-        valueRedraw: nameRedraw
+        dataWaypoint: data,
+        nameRadraw: nameRedraw
       };
     },
 
@@ -48,7 +53,7 @@ export const getWaypoints = createSlice({
 
       state.dataWaypoints = {
         ...state.dataWaypoints,
-        valueRedraw: nameRedraw
+        nameRadraw: nameRedraw
       };
     },
 
@@ -61,8 +66,8 @@ export const getWaypoints = createSlice({
 
       state.dataWaypoints = {
         ...state.dataWaypoints,
-        waypoint: data,
-        valueRedraw: nameRedraw
+        dataWaypoint: data,
+        nameRadraw: nameRedraw
       };
     },
 
@@ -74,7 +79,7 @@ export const getWaypoints = createSlice({
 
       state.dataWaypoints = {
         ...state.dataWaypoints,
-        valueRedraw: nameRedraw
+        nameRadraw: nameRedraw
       };
     },
 
@@ -86,7 +91,7 @@ export const getWaypoints = createSlice({
 
       state.dataWaypoints = {
         ...state.dataWaypoints,
-        valueRedraw: nameRedraw
+        nameRadraw: nameRedraw
       };
     }
   }

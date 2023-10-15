@@ -95,4 +95,38 @@ export default class WaypointPresenter {
       this.#replaceFormEditPointToWaypoint();
     }
   };
+
+  setSaving() {
+    if (this.#mode === Mode.EDITING) {
+      this.#formEditPoint.updateElement({
+        isDisabled: true,
+        isSaving: true,
+      });
+    }
+  }
+
+  setDeleting() {
+    if (this.#mode === Mode.EDITING) {
+      this.#formEditPoint.updateElement({
+        isDisabled: true,
+        isDeleting: true,
+      });
+    }
+  }
+
+  setAborting() {
+    if (this.#mode === Mode.DEFAULT) {
+      this.#content.shake();
+      return;
+    }
+    const resetFormState = () => {
+      this.#formEditPoint.updateElement({
+        isDisabled: false,
+        isSaving: false,
+        isDeleting: false,
+      });
+    };
+
+    this.#formEditPoint.shake(resetFormState);
+  }
 }
