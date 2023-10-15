@@ -16,17 +16,20 @@ export default class CreatNewEventPresenter {
   #handleRecordNewWaypoint = null;
   #formAddNewPoint = null;
   #mode = Mode.DEFAULT;
+  #points = null;
 
   constructor(
     buttonNewEventContainer,
     containerForContent,
     onRedootPage,
     onRecordNewWaypoint,
+    points
   ) {
     this.#buttonNewEventContainer = buttonNewEventContainer;
     this.#containerForContent = containerForContent;
     this.#handleRedootPage = onRedootPage;
     this.#handleRecordNewWaypoint = onRecordNewWaypoint;
+    this.#points = points;
   }
 
   init(indicatorButton = Mode.DEFAULT) {
@@ -58,7 +61,8 @@ export default class CreatNewEventPresenter {
   #creatFormAddNewPoint = () => {
     this.#formAddNewPoint = new FormAddNewPointViwe(
       this.closeOpenFormAddNewPoint,
-      this.#handleRecordNewWaypoint
+      this.#handleRecordNewWaypoint,
+      this.#points
     );
     render(this.#formAddNewPoint, this.#containerForContent.element, RenderPosition.AFTERBEGIN);
     document.addEventListener('keydown', this.#closeFormAddNewPoint);
@@ -84,4 +88,27 @@ export default class CreatNewEventPresenter {
       this.#destroy();
     }
   };
+
+  setSaving() {
+    if (this.#mode === Mode.EDITING) {
+      this.#formAddNewPoint.updateElement({
+        isDisabled: true,
+        isSaving: true,
+      });
+    }
+  }
+
+  setAborting() {
+    if (this.#mode === Mode.EDITING) {
+
+      const resetFormState = () => {
+        this.#formAddNewPoint.updateElement({
+          isDisabled: false,
+          isSaving: false,
+        });
+      };
+
+      this.#formAddNewPoint.shake(resetFormState);
+    }
+  }
 }

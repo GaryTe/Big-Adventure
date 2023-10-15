@@ -7,7 +7,8 @@ import {
   getDataForTypePoint,
   getNumberOffer,
   getDataForTypeDestination,
-  roundNumber
+  roundNumber,
+  parseStateToWaypoint
 } from '../utils/utils-for-forms';
 import {
   Mode,
@@ -20,7 +21,15 @@ import {encode} from 'he';
 
 
 const createFormEditPoint = (waypoint) => {
-  const {type, offers, destination, basePrice} = waypoint;
+  const {
+    type,
+    offers,
+    destination,
+    basePrice,
+    isDisabled = false,
+    isSaving = false,
+    isDeleting = false
+  } = waypoint;
 
   return (`<li class="trip-events__item">
 <form
@@ -102,11 +111,17 @@ method="post"
     <button
     class="event__save-btn  btn  btn--blue"
     type="submit"
-    ${!destination ? 'disabled' : ''}
+    ${!destination || isDisabled ? 'disabled' : ''}
     >
-    Save
+    ${!isSaving ? 'Save' : 'Saving'}
     </button>
-    <button class="event__reset-btn" type="reset">Delete</button>
+    <button
+    class="event__reset-btn"
+    type="reset"
+    ${isDisabled ? 'disabled' : ''}
+    >
+    ${!isDeleting ? 'Delete' : 'Deleting'}
+    </button>
     <button class="event__rollup-btn" type="button">
       <span class="visually-hidden">Open event</span>
     </button>
@@ -323,20 +338,18 @@ export default class FormEditPointView extends AbstractStatefulView {
 
   #buttonSaveClickHandle = () => {
     this.#mode = Mode.SAVE;
-    this.#handleArrowClick();
     this.#handleAction({
       nameAction: TypeAction.PUT,
       nameRedraw: TypeRedraw.PATCH_UPDATE,
-      data: this._state
+      data: parseStateToWaypoint(this._state)
     });
   };
 
   #buttonDeleteClickHandle = () => {
-    this.#handleArrowClick();
     this.#handleAction({
       nameAction: TypeAction.DELETE,
       nameRedraw: TypeRedraw.PATCH_DELET,
-      data: this._state
+      data: parseStateToWaypoint(this._state)
     });
   };
 }

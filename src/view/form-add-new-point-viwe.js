@@ -7,10 +7,9 @@ import {
   getDataForTypePoint,
   getDataForTypeDestination,
   getNumberOffer,
-  roundNumber
+  roundNumber,
+  parseNewStateToWaypoint
 } from '../utils/utils-for-forms';
-import { points } from '../mock-data/point';
-import { nanoid } from 'nanoid';
 import { TypeAction, TypeRedraw } from '../const';
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
@@ -18,7 +17,14 @@ import {encode} from 'he';
 
 
 const createFormAddNewPoint = (waypoint) => {
-  const {type, offers, destination, basePrice} = waypoint;
+  const {
+    type,
+    offers,
+    destination,
+    basePrice,
+    isSaving = false,
+    isDisabled = false
+  } = waypoint;
 
   return(` <li class="trip-events__item">
 <form class="event event--edit" action="#" method="post">
@@ -90,11 +96,17 @@ const createFormAddNewPoint = (waypoint) => {
     <button
     class="event__save-btn  btn  btn--blue"
     type="submit"
-    ${!destination ? 'disabled' : ''}
+    ${!destination || isDisabled ? 'disabled' : ''}
     >
-    Save
+    ${!isSaving ? 'Save' : 'Saving'}
     </button>
-    <button class="event__reset-btn" type="reset">Cancel</button>
+    <button
+    class="event__reset-btn"
+    type="reset"
+    ${isDisabled ? 'disabled' : ''}
+    >
+    Cancel
+    </button>
     <p class="error"
     style="
     margin: 0;
@@ -116,13 +128,12 @@ const createFormAddNewPoint = (waypoint) => {
 };
 
 export default class FormAddNewPointViwe extends AbstractStatefulView {
-  #dataRout = points[0];
   #handleCloseOpenFormAddNewPoint = null;
   #handleRecordNewWaypoint = null;
   #dataAndTimeStartEvent = null;
   #dataAndTimeEndEvent = null;
 
-  constructor(onCloseOpenFormAddNewPoint, onRecordNewWaypoint) {
+  constructor(onCloseOpenFormAddNewPoint, onRecordNewWaypoint, points) {
     super();
     this._setState(points[0]);
     this.#handleCloseOpenFormAddNewPoint = onCloseOpenFormAddNewPoint;
@@ -291,12 +302,10 @@ export default class FormAddNewPointViwe extends AbstractStatefulView {
 
   #buttonSaveClickHandle = (evt) => {
     evt.preventDefault();
-    this._setState({uniqueValue: nanoid()});
-    this.#handleCloseOpenFormAddNewPoint();
     this.#handleRecordNewWaypoint({
       nameAction: TypeAction.POST,
       nameRedraw: TypeRedraw.MINOR,
-      data: this._state
+      data: parseNewStateToWaypoint(this._state)
     });
   };
 
