@@ -130,6 +130,7 @@ export const changesWaypoint = async (nameRedraw, dataWaypoint, waypointsPresent
 
 
 export const addNewWaypoint = async (nameRedraw, dataWaypoint, creatNewEventPresenter) => {
+
   let respons = null;
   const data = adaptToServer(dataWaypoint);
 
@@ -158,10 +159,15 @@ export const addNewWaypoint = async (nameRedraw, dataWaypoint, creatNewEventPres
 
   store.dispatch(addWaypoint({nameRedraw, data: dataPoint}));
   creatNewEventPresenter.closeOpenFormAddNewPoint();
+
+  //creatNewEventPresenter.setSaving();
+  //store.dispatch(addWaypoint({nameRedraw, data: dataWaypoint}));
+  //creatNewEventPresenter.closeOpenFormAddNewPoint();
 };
 
 
 export const deletePoint = async (nameRedraw, dataWaypoint, waypointsPresenterList) => {
+
   let respons = null;
   const index = Number(dataWaypoint.id);
 
@@ -185,4 +191,7 @@ export const deletePoint = async (nameRedraw, dataWaypoint, waypointsPresenterLi
   }
 
   store.dispatch(deleteWaypoint({nameRedraw, data: dataWaypoint}));
+
+  //waypointsPresenterList.get(dataWaypoint.id).setDeleting();
+  //store.dispatch(deleteWaypoint({nameRedraw, data: dataWaypoint}));
 };

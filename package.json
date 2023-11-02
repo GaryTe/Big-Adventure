@@ -13,16 +13,19 @@
   "scripts": {
     "lint": "eslint src/",
     "build": "webpack --mode production",
-    "start": "webpack serve --mode development --open"
+    "start": "webpack serve --mode development --open",
+    "test": "jest"
   },
   "devDependencies": {
     "@babel/core": "7.20.5",
     "@babel/preset-env": "7.20.2",
+    "@jedmao/redux-mock-store": "^3.0.5",
     "babel-loader": "9.1.0",
     "copy-webpack-plugin": "11.0.0",
     "css-loader": "6.7.2",
     "eslint": "8.19.0",
     "eslint-config-htmlacademy": "6.0.0",
+    "jest": "^29.7.0",
     "style-loader": "3.3.1",
     "webpack": "5.75.0",
     "webpack-cli": "5.0.0",

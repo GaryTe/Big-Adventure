@@ -192,5 +192,6 @@ export {
   setDestinationsList,
   setOffers,
   parseStateToWaypoint,
-  parseNewStateToWaypoint
+  parseNewStateToWaypoint,
+  offersByType
 };
