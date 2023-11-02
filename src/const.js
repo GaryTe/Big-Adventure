@@ -1,5 +1,6 @@
 const Message = {
-  EVERTHING:  'Click New Event to create your first point',
+  SERVER_RESPONSE: 'No data was received from the server.Try reloading the page.',
+  EVERYTHING:  'Click New Event to create your first point',
   FUTURE: 'There are no future events now'
 };
 

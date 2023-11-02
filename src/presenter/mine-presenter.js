@@ -3,7 +3,7 @@ import SortingView from '../view/sorting-view';
 import ContainerForContentView from '../view/container-for-content-view';
 import WaypointPresenter from './waypoint-presenter';
 import CreatNewEventPresenter from './creat-new-event-presenter';
-import ScreenError from '../view/screen-error/screen-error';
+import MessageError from '../view/message-error/message-error';
 import {
   render,
   RenderPosition,
@@ -14,7 +14,8 @@ import {
   TypeFilter,
   TypeAction,
   TypeRedraw,
-  TimeLimit
+  TimeLimit,
+  Message
 } from '../const';
 import {
   sortWaypointsDown,
@@ -60,13 +61,16 @@ export default class MinePresenter {
     upperLimit: TimeLimit.UPPER_LIMIT
   });
 
-  #screenError = new ScreenError();
+  #messageError = null;
+  #keysMessageError = Object.keys(Message);
+
 
   constructor(minePresenter, sortingContainer, buttonNewEventContainer) {
     this.#minePresenter = minePresenter;
     this.#sortingContainer = sortingContainer;
     this.#buttonNewEventContainer = buttonNewEventContainer;
 
+    this.#messageError = new MessageError(sortingContainer);
   }
 
 
@@ -158,9 +162,6 @@ export default class MinePresenter {
       case TypeRedraw.MINOR_PENDING:
         this.#uiBlocker.block();
         this.#unsubscribe.redrawing();
-        this.#renderElementFilter();
-        render(this.#containerForContent, this.#sortingContainer);
-        this.#renderElementSort();
         this.#unsubscribe.redrawing = store.subscribe(
           () => {
             if(getDataWaypoints().nameRadraw === TypeRedraw.MINOR_FULFILLED
@@ -188,6 +189,9 @@ export default class MinePresenter {
         this.#unsubscribe.redrawing();
         this.#unsubscribe.destinations();
         this.#unsubscribe.offers();
+        this.#renderElementFilter();
+        this.#renderElementSort();
+        render(this.#containerForContent, this.#sortingContainer);
         this.#creatWaypointsList();
         this.#renderCreatNewEventPresenter();
         this.#uiBlocker.unblock();
@@ -200,7 +204,7 @@ export default class MinePresenter {
       case TypeRedraw.MINOR_REJECTED:
         this.#unsubscribe.redrawing();
         this.#uiBlocker.unblock();
-        this.#screenError.addScreenError();
+        this.#messageError.active(this.#keysMessageError[0]);
         break;
       case TypeRedraw.PATCH_UPDATE:
         this.#waypointsPresenterList.get(waypoint.id).init(waypoint);
@@ -208,6 +212,7 @@ export default class MinePresenter {
       case TypeRedraw.PATCH_DELET:
         this.#waypointsPresenterList.get(waypoint.id).destroy();
         this.#waypointsPresenterList.delete(waypoint.id);
+        if(!this.#waypointsPresenterList.size) {this.#messageError.active(this.#typeFilter);}
         break;
       case TypeRedraw.MINOR:
         this.#clearWaypointList();
@@ -230,6 +235,7 @@ export default class MinePresenter {
 
 
   #checkRedrawSort = () => {
+    if(!this.#elementSort) {return;}
     if(this.#elementSort.nameSort === TypeSort.PRICE) {
       this.#typeSort = TypeSort.DAY;
       this.#elementSort.destroy(this.#elementSort);
@@ -275,7 +281,13 @@ export default class MinePresenter {
 
 
   #creatWaypointsList = () => {
-    this.#sortWaypoints().map((route) => this.#renderWaypointsList(route));
+    if(getWaypointsList()) {
+      this.#messageError.inactive();
+      this.#sortWaypoints().map((route) => this.#renderWaypointsList(route));
+      return;
+    }
+
+    this.#messageError.active(this.typeFilter);
   };
 
 
@@ -312,6 +324,7 @@ export default class MinePresenter {
 
 
   #renderElementSort = () => {
+    if(!this.#points) {return;}
     this.#elementSort = new SortingView(
       this.#sortTypeChange
     );

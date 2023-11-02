@@ -1,12 +1,11 @@
 import AbstractView from '../framework/view/abstract-view';
-import { offersByType } from '../mock-data/offer';
+import { offersByType } from '../utils/utils-for-forms';
 import {
   humanizData,
   humanizTame,
   getDate,
   getDataTime
 } from '../utils/utils';
-import { Message } from '../const';
 
 const getOffers = (point) => {
   const {offers, type} = point;
@@ -48,10 +47,6 @@ const getHtmlElement = (point) => {
 };
 
 const createContent = (route) => {
-  if(!route) {
-    return `<p class="trip-events__msg">${Message['Future'.toUpperCase()]}</p>`;
-  }
-
   const {basePrice, dateFrom, dateTo, type} = route;
 
   getOffers(route);
